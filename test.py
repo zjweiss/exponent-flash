@@ -6,11 +6,14 @@ from pathlib import Path
 
 LOG_FILE = "practice_log.json"
 
-def get_positive_int(prompt):
-    """Get a positive integer from user input."""
+def get_positive_int(prompt, default=None):
+    """Get a positive integer from user input, with optional default."""
     while True:
         try:
-            value = int(input(prompt))
+            user_input = input(prompt)
+            if not user_input and default is not None:
+                return default
+            value = int(user_input)
             if value > 0:
                 return value
             print("Please enter a positive number.")
@@ -204,12 +207,17 @@ def main():
 
     if choice == "1":
         num_questions = get_positive_int("How many questions do you want? ")
-        max_square_base = get_positive_int("Max base for perfect squares (e.g., 12 for up to 12^2): ")
-        max_cube_base = get_positive_int("Max base for perfect cubes (e.g., 5 for up to 5^3): ")
+        max_square_base = get_positive_int(
+            "Max base for perfect squares (e.g., 12 for up to 12^2) [default: 15]: ", default=15)
+        max_cube_base = get_positive_int(
+            "Max base for perfect cubes (e.g., 5 for up to 5^3) [default: 10]: ", default=10)
 
         exponent_limits = {}
+        defaults = {2: 10, 3: 5, 4: 4, 5: 4}
         for base in range(2, 6):
-            exponent_limits[base] = get_positive_int(f"Max exponent for base {base} (e.g., 7 for up to {base}^7): ")
+            exponent_limits[base] = get_positive_int(
+                f"Max exponent for base {base} (e.g., 7 for up to {base}^7) [default: {defaults[base]}]: ",
+                default=defaults[base])
 
         quiz_session(max_square_base, max_cube_base, exponent_limits, num_questions)
 
