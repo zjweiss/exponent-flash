@@ -20,41 +20,6 @@ def get_positive_int(prompt, default=None):
         except ValueError:
             print("Please enter a valid integer.")
 
-def generate_question(q_type, max_square_base, max_cube_base,
-                      exponent_limits, asked_questions):
-    """Generate a random question that hasn't been asked yet."""
-    while True:
-        if q_type == 'perfect_square':
-            num = random.randint(1, max_square_base)
-            q_id = ('perfect_square', num)
-        elif q_type == 'perfect_cube':
-            num = random.randint(1, max_cube_base)
-            q_id = ('perfect_cube', num)
-        else:  # arbitrary exponent
-            base = random.randint(2, 5)
-            max_exp = exponent_limits[base]
-            exponent = random.randint(2, max_exp)
-            q_id = ('exponent', base, exponent)
-
-        if q_id not in asked_questions:
-            asked_questions.add(q_id)
-            break
-
-    if q_type == 'perfect_square':
-        answer = num
-        perfect_square = num ** 2
-        question = f"What is the square root of {perfect_square}?"
-    elif q_type == 'perfect_cube':
-        answer = num
-        perfect_cube = num ** 3
-        question = f"What is the cube root of {perfect_cube}?"
-    else:  # exponent
-        base, exponent = q_id[1], q_id[2]
-        answer = base ** exponent
-        question = f"{base}^{exponent} = ?"
-
-    return question, answer
-
 def save_session(correct, num_questions, wrong_questions):
     """Save quiz session to log file."""
     session = {
@@ -156,20 +121,58 @@ def show_sessions():
     print("Invalid choice.\n")
     return None
 
+def generate_all_questions(max_square_base, max_cube_base, exponent_limits):
+    """Generate all possible questions and return shuffled list."""
+    all_questions = []
+
+    for base in range(1, max_square_base + 1):
+        all_questions.append(('perfect_square', base))
+
+    for base in range(1, max_cube_base + 1):
+        all_questions.append(('perfect_cube', base))
+
+    for base in range(2, 6):
+        max_exp = exponent_limits.get(base, 0)
+        for exp in range(2, max_exp + 1):
+            all_questions.append(('exponent', base, exp))
+
+    random.shuffle(all_questions)
+    return all_questions
+
 def quiz_session(max_square_base, max_cube_base, exponent_limits, num_questions):
     """Run a quiz session and return results."""
-    print(f"\nStarting {num_questions} questions...\n")
+    all_questions = generate_all_questions(max_square_base, max_cube_base,
+                                           exponent_limits)
+
+    if num_questions > len(all_questions):
+        print(f"\nWarning: Only {len(all_questions)} unique questions available.")
+        print(f"Reducing quiz to {len(all_questions)} questions.\n")
+        num_questions = len(all_questions)
+    else:
+        print(f"\nStarting {num_questions} questions...\n")
 
     correct = 0
-    question_types = ['perfect_square', 'perfect_cube', 'exponent']
     total_time = 0
-    asked_questions = set()
     wrong_questions = []
 
     for i in range(num_questions):
-        q_type = random.choice(question_types)
-        question, answer = generate_question(q_type, max_square_base, max_cube_base,
-                                             exponent_limits, asked_questions)
+        q_info = all_questions[i]
+        q_type = q_info[0]
+
+        if q_type == 'perfect_square':
+            num = q_info[1]
+            answer = num
+            perfect_square = num ** 2
+            question = f"What is the square root of {perfect_square}?"
+        elif q_type == 'perfect_cube':
+            num = q_info[1]
+            answer = num
+            perfect_cube = num ** 3
+            question = f"What is the cube root of {perfect_cube}?"
+        else:  # exponent
+            base, exponent = q_info[1], q_info[2]
+            answer = base ** exponent
+            question = f"{base}^{exponent} = ?"
 
         start_time = time.time()
         while True:
