@@ -145,11 +145,11 @@ def quiz_session(max_square_base, max_cube_base, exponent_limits, num_questions)
                                            exponent_limits)
 
     if num_questions > len(all_questions):
-        print(f"\nError: Only {len(all_questions)} unique questions available.")
-        print(f"You requested {num_questions} questions.\n")
-        return
-
-    print(f"\nStarting {num_questions} questions...\n")
+        print(f"\nWarning: Only {len(all_questions)} unique questions available.")
+        print(f"Reducing quiz to {len(all_questions)} questions.\n")
+        num_questions = len(all_questions)
+    else:
+        print(f"\nStarting {num_questions} questions...\n")
 
     correct = 0
     total_time = 0
